@@ -1,0 +1,68 @@
+*, *::after, *::before {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    color-scheme: light dark;
+    scrollbar-gutter: stable both-edges;
+    --color-go: #00ADD8;
+    --color-go-dark: color-mix(in srgb, var(--color-go) 75%, black 25%);
+}
+
+body {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.search-menu {
+    display: flex;
+    justify-content: center;
+}
+
+.search-bar {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 8px 12px;
+}
+
+.search-button {
+    font-family: inherit;
+    font-size: 1rem;
+    border: 0;
+    border-radius: 4px;
+    padding: 8px 12px;
+    background-color: var(--color-go);
+    transition-duration: 150ms;
+    &:hover {
+        cursor: pointer;
+        background-color: var(--color-go-dark);
+    }
+}
+
+.breadcrumbs {
+    margin: 0rem 10rem;
+    padding: 5px 0px;
+}
+
+.file-container {
+    margin: 0rem 10rem;
+}
+
+table {
+    table-layout: fixed;
+    border-top: 1px solid currentColor;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+}
+
+a {
+    color: var(--color-go);
+    &:hover {
+        color: var(--color-go-dark);
+    }
+}

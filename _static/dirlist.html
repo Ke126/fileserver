@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/_static/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <header class="search-menu">
+        <form>
+            <input class="search-bar" type="search" name="q" placeholder="Search" />
+            <button class="search-button" type="submit">Search</button>
+        </form>
+    </header>
+    <nav class="breadcrumbs">
+        {{range $i, $e := .Breadcrumbs}}
+        {{if $i}}
+        <span>></span>
+        {{end}}
+        <a class="breadcrumb" href="{{.Href}}">{{.Name}}</a>
+        {{end}}
+    </nav>
+    <div class="file-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date modified</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Files}}
+                <tr>
+                    <td>
+                        <a href="{{.Href}}">{{.Name}}</a>
+                    </td>
+                    <td>{{.DateModified}}</td>
+                    <td>{{.MimeType}}</td>
+                    <td>{{.Size}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
