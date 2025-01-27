@@ -2,7 +2,9 @@ package fileserver_test
 
 import (
 	"fileserver"
+	"fileserver/internal/filesystem"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -104,8 +106,9 @@ func TestRouting(t *testing.T) {
 	}
 
 	dir := makeMockFS()
-	customFileServer := fileserver.FileServer(dir)
-	stdlibFileServer := http.FileServer(dir)
+	dir2 := filesystem.New2(".", dir)
+	customFileServer := fileserver.FileServer(dir2)
+	stdlibFileServer := http.FileServer(http.FS(dir))
 
 	for _, tt := range tests {
 		// test custom implementation
@@ -150,7 +153,7 @@ func TestRouting(t *testing.T) {
 	}
 }
 
-func makeMockFS() http.FileSystem {
+func makeMockFS() fs.FS {
 	// mock fs structure:
 	// / (root)
 	// ├─ a
@@ -176,5 +179,5 @@ func makeMockFS() http.FileSystem {
 		"?thing":      {},                                          // filename starting with &
 		"#thing":      {},                                          // filename starting with #
 	}
-	return http.FS(mock)
+	return mock
 }

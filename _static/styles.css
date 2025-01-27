@@ -15,6 +15,16 @@ body {
     font-family: ui-sans-serif, system-ui, sans-serif;
 }
 
+.size-6 {
+    height: 20px;
+}
+
+.filename {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .search-menu {
     display: flex;
     justify-content: center;

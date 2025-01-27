@@ -2,11 +2,12 @@ package main
 
 import (
 	"fileserver"
+	"fileserver/internal/filesystem"
 	"net/http"
 )
 
 func main() {
-	thing := http.Dir(".")
+	thing := filesystem.New(".")
 	fs := fileserver.FileServer(thing)
 
 	http.Handle("/", fs)
