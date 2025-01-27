@@ -113,7 +113,7 @@ func (fv FileView) Size() string {
 	return strconv.Itoa(size) + " GB"
 }
 
-func DirList(fsys fs.FS, name string) ([]FileView, error) {
+func ListFiles(fsys fs.FS, name string) ([]FileView, error) {
 	var out []FileView
 	dirs, err := fs.ReadDir(fsys, name)
 	if err != nil {

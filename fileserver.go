@@ -85,7 +85,8 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fh.listDirs(filename, w, r)
 }
 
-type dirListInfo struct {
+type dirListPage struct {
+	Search      string
 	Breadcrumbs []breadcrumb
 	Files       []filesystem.FileView
 }
@@ -122,14 +123,15 @@ func makeBreadcrumbs(urlPath string) []breadcrumb {
 }
 
 func (fh *fileHandler) listDirs(name string, w http.ResponseWriter, r *http.Request) {
-	fileViews, err := filesystem.DirList(fh.fs, name)
+	fileViews, err := filesystem.ListFiles(fh.fs, name)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
 	breadcrumbs := makeBreadcrumbs(r.URL.Path)
-	view := dirListInfo{
+	page := dirListPage{
+		Search:      r.URL.Query().Get("q"),
 		Files:       fileViews,
 		Breadcrumbs: breadcrumbs,
 	}
@@ -137,5 +139,5 @@ func (fh *fileHandler) listDirs(name string, w http.ResponseWriter, r *http.Requ
 	template := template.Must(template.New("dirlist.html").ParseFiles("_static/dirlist.html"))
 
 	w.WriteHeader(http.StatusOK)
-	template.Execute(w, view)
+	template.Execute(w, page)
 }
