@@ -1,6 +1,7 @@
 package fileserver
 
 import (
+	"archive/zip"
 	"fmt"
 	"html/template"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"slices"
 	"strings"
 
+	"fileserver/internal/file"
 	"fileserver/internal/filesystem"
 )
 
@@ -60,7 +62,11 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// redirect if path has a trailing slash
 		if lastChar == '/' {
 			w.Header()["Content-Type"] = nil
-			http.Redirect(w, r, "../"+path.Base(r.URL.Path), http.StatusMovedPermanently)
+			redirect := "../" + path.Base(r.URL.Path)
+			if r.URL.RawQuery != "" {
+				redirect += "?" + r.URL.RawQuery
+			}
+			http.Redirect(w, r, redirect, http.StatusMovedPermanently)
 			return
 		}
 		// serve the file
@@ -68,6 +74,10 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !ok {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
+		}
+		// if its a download, set the header
+		if r.URL.Query().Has("download") {
+			w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, s.Name()))
 		}
 		http.ServeContent(w, r, s.Name(), s.ModTime(), rs)
 		return
@@ -77,18 +87,26 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// redirect if path does not have a trailing slash
 	if lastChar != '/' {
 		w.Header()["Content-Type"] = nil
-		http.Redirect(w, r, path.Base(r.URL.Path)+"/", http.StatusMovedPermanently)
+		redirect := path.Base(r.URL.Path) + "/"
+		if r.URL.RawQuery != "" {
+			redirect += "?" + r.URL.RawQuery
+		}
+		http.Redirect(w, r, redirect, http.StatusMovedPermanently)
+		return
+	}
+	// serve the zipped directory
+	if r.URL.Query().Has("download") {
+		fh.serveZip(filename, s.Name(), w, r)
 		return
 	}
 	// serve the directory listing page
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	fh.listDirs(filename, w, r)
 }
 
 type dirListPage struct {
 	Search      string
 	Breadcrumbs []breadcrumb
-	Files       []filesystem.FileView
+	Files       []file.FileF
 }
 
 type breadcrumb struct {
@@ -122,8 +140,34 @@ func makeBreadcrumbs(urlPath string) []breadcrumb {
 	return breadcrumbs
 }
 
+func (fh *fileHandler) serveZip(name string, shortname string, w http.ResponseWriter, r *http.Request) {
+	sub, err := fs.Sub(fh.fs, name)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s.zip"`, shortname))
+
+	zipper := zip.NewWriter(w)
+	err = zipper.AddFS(sub)
+	if err != nil {
+		http.NotFound(w, r)
+	}
+
+	zipper.Close()
+}
+
 func (fh *fileHandler) listDirs(name string, w http.ResponseWriter, r *http.Request) {
-	fileViews, err := filesystem.ListFiles(fh.fs, name)
+	q := r.URL.Query().Get("q")
+	var fileViews []file.FileF
+	var err error
+	if q == "" {
+		fileViews, err = file.ListFiles(fh.fs, name)
+	} else {
+		fileViews, err = file.SearchFiles(fh.fs, name, q)
+	}
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -131,13 +175,14 @@ func (fh *fileHandler) listDirs(name string, w http.ResponseWriter, r *http.Requ
 
 	breadcrumbs := makeBreadcrumbs(r.URL.Path)
 	page := dirListPage{
-		Search:      r.URL.Query().Get("q"),
+		Search:      q,
 		Files:       fileViews,
 		Breadcrumbs: breadcrumbs,
 	}
 
 	template := template.Must(template.New("dirlist.html").ParseFiles("_static/dirlist.html"))
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	template.Execute(w, page)
 }

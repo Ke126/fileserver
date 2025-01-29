@@ -2,6 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    /* outline: solid 1px red; */
 }
 
 :root {
@@ -17,12 +18,15 @@ body {
 
 .size-6 {
     height: 20px;
+    width: 20px;
+    flex: none;
 }
 
 .filename {
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: start;
+    /* gap: 4px; */
 }
 
 .search-menu {
@@ -76,6 +80,10 @@ table {
 
 th {
     text-align: left;
+}
+
+.link {
+    overflow-wrap: anywhere;
 }
 
 a {
