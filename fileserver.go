@@ -2,6 +2,7 @@ package fileserver
 
 import (
 	"archive/zip"
+	"embed"
 	"fmt"
 	"html/template"
 	"io"
@@ -18,7 +19,9 @@ import (
 var _ http.Handler = &fileHandler{}
 
 type fileHandler struct {
-	fs WriterFS
+	fs     WriterFS
+	static fs.FS
+	tmpl   *template.Template
 }
 
 type WriterFS interface {
@@ -29,13 +32,17 @@ type WriterFS interface {
 	WriteFile(name string, data []byte, perm fs.FileMode) error
 }
 
+//go:embed _static/*
+var content embed.FS
+
 func FileServer(fs WriterFS) *fileHandler {
-	return &fileHandler{fs}
+	template := template.Must(template.New("dirlist.html").ParseFS(content, "_static/dirlist.html"))
+	return &fileHandler{fs, content, template}
 }
 
 func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/_static/styles.css") {
-		http.ServeFile(w, r, "_static/styles.css")
+		http.ServeFileFS(w, r, fh.static, "_static/styles.css")
 		return
 	}
 
@@ -179,10 +186,7 @@ func (fh *fileHandler) listDirs(name string, w http.ResponseWriter, r *http.Requ
 		Files:       fileViews,
 		Breadcrumbs: breadcrumbs,
 	}
-
-	template := template.Must(template.New("dirlist.html").ParseFiles("_static/dirlist.html"))
-
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	template.Execute(w, page)
+	fh.tmpl.Execute(w, page)
 }
