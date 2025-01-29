@@ -16,10 +16,15 @@ body {
     font-family: ui-sans-serif, system-ui, sans-serif;
 }
 
-.size-6 {
+.file-icon {
     height: 20px;
     width: 20px;
     flex: none;
+}
+
+.download-icon {
+    height: 20px;
+    width: 20px;
 }
 
 .search-icon {
