@@ -3,14 +3,17 @@ package main
 import (
 	"fileserver"
 	"fileserver/internal/filesystem"
+	"log/slog"
 	"net/http"
 )
 
 func main() {
-	thing := filesystem.New(".")
-	fs := fileserver.FileServer(thing)
+	fs := filesystem.New(".")
+	logger := slog.Default()
+	handler := fileserver.FileServer(fs, logger)
 
-	http.Handle("/", fs)
+	http.Handle("/", handler)
 
+	logger.Info("Listening on port 8080")
 	http.ListenAndServe(":8080", nil)
 }

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"path"
 	"slices"
@@ -22,6 +23,7 @@ type fileHandler struct {
 	fs     WriterFS
 	static fs.FS
 	tmpl   *template.Template
+	logger *slog.Logger
 }
 
 type WriterFS interface {
@@ -35,23 +37,24 @@ type WriterFS interface {
 //go:embed _static/*
 var content embed.FS
 
-func FileServer(fs WriterFS) *fileHandler {
+func FileServer(fs WriterFS, logger *slog.Logger) *fileHandler {
 	template := template.Must(template.New("dirlist.html").ParseFS(content, "_static/dirlist.html"))
-	return &fileHandler{fs, content, template}
+	return &fileHandler{fs: fs, static: content, tmpl: template, logger: logger}
 }
 
 func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fh.logger.Info(r.URL.String())
+
+	// handle requests for styles.css (and other static assets)
 	if strings.HasSuffix(r.URL.Path, "/_static/styles.css") {
 		http.ServeFileFS(w, r, fh.static, "_static/styles.css")
 		return
 	}
 
 	filename := filesystem.Clean(r.URL.Path)
-	fmt.Println(r.URL.Path, filename)
 
 	f, err := fh.fs.Open(filename)
 	if err != nil {
-		fmt.Println(err)
 		http.NotFound(w, r)
 		return
 	}
@@ -68,6 +71,7 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !s.IsDir() {
 		// redirect if path has a trailing slash
 		if lastChar == '/' {
+			// suppress the default http.Redirect behavior
 			w.Header()["Content-Type"] = nil
 			redirect := "../" + path.Base(r.URL.Path)
 			if r.URL.RawQuery != "" {
@@ -82,7 +86,7 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-		// if its a download, set the header
+		// if its a download, set the Content-Disposition header
 		if r.URL.Query().Has("download") {
 			w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, s.Name()))
 		}
@@ -111,6 +115,7 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type dirListPage struct {
+	Title       string
 	Search      string
 	Breadcrumbs []breadcrumb
 	Files       []file.FileF
@@ -159,6 +164,7 @@ func (fh *fileHandler) serveZip(name string, shortname string, w http.ResponseWr
 
 	zipper := zip.NewWriter(w)
 	err = zipper.AddFS(sub)
+	// todo: this check seems to create invalid zips if the zip contains a symlink
 	if err != nil {
 		http.NotFound(w, r)
 	}
@@ -182,6 +188,7 @@ func (fh *fileHandler) listDirs(name string, w http.ResponseWriter, r *http.Requ
 
 	breadcrumbs := makeBreadcrumbs(r.URL.Path)
 	page := dirListPage{
+		Title:       name,
 		Search:      q,
 		Files:       fileViews,
 		Breadcrumbs: breadcrumbs,

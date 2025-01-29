@@ -3,8 +3,8 @@ package fileserver_test
 import (
 	"fileserver"
 	"fileserver/internal/filesystem"
-	"fmt"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -107,7 +107,7 @@ func TestRouting(t *testing.T) {
 
 	dir := makeMockFS()
 	dir2 := filesystem.New2(".", dir)
-	customFileServer := fileserver.FileServer(dir2)
+	customFileServer := fileserver.FileServer(dir2, slog.Default())
 	stdlibFileServer := http.FileServer(http.FS(dir))
 
 	for _, tt := range tests {
@@ -120,7 +120,6 @@ func TestRouting(t *testing.T) {
 
 			gotStatus := res.Result().StatusCode
 			gotContentType := res.Result().Header.Get("Content-Type")
-			fmt.Println("custom " + gotContentType)
 
 			if gotStatus != tt.wantStatus {
 				t.Errorf("got %d, want %d", gotStatus, tt.wantStatus)
@@ -140,7 +139,6 @@ func TestRouting(t *testing.T) {
 
 			gotStatus := res.Result().StatusCode
 			gotContentType := res.Result().Header.Get("Content-Type")
-			fmt.Println("stdlib " + gotContentType)
 
 			if gotStatus != tt.wantStatus {
 				t.Errorf("got %d, want %d", gotStatus, tt.wantStatus)
