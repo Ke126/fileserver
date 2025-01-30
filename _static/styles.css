@@ -8,35 +8,37 @@
 :root {
     color-scheme: light dark;
     scrollbar-gutter: stable both-edges;
-    --color-go: #00ADD8;
-    --color-go-dark: color-mix(in srgb, var(--color-go) 75%, black 25%);
+    --go-blue: #00ADD8;
+    --go-dark-blue: color-mix(in srgb, var(--go-blue) 75%, black 25%);
+    line-height: 1.5;
 }
 
 body {
+    line-height: inherit;
     font-family: ui-sans-serif, system-ui, sans-serif;
 }
 
 .file-icon {
-    height: 20px;
-    width: 20px;
+    height: 24px;
+    width: 24px;
     flex: none;
 }
 
 .download-icon {
-    height: 20px;
-    width: 20px;
+    height: 24px;
+    width: 24px;
 }
 
 .search-icon {
-    height: 21px;
-    width: 21px;
+    height: 24px;
+    width: 24px;
 }
 
 .filename {
     display: flex;
     align-items: center;
     justify-content: start;
-    /* gap: 4px; */
+    gap: 4px;
 }
 
 .search-form {
@@ -47,30 +49,31 @@ body {
 }
 
 .search-bar {
+    line-height: inherit;
     font-family: inherit;
-    font-size: 1rem;
-    padding: 8px 12px;
+    font-size: inherit;
+    padding: 4px 8px;
     border-radius: 4px 0px 0px 4px;
     border-style: solid;
     border-width: 1px;
     border-right: none;
     &:hover {
-        border-color: var(--color-go);
+        border-color: var(--go-blue);
     }
 }
 
 .search-button {
     display: flex;
     align-content: center;
-    border: 1px solid var(--color-go);
+    border: 1px solid var(--go-blue);
     border-radius: 0px 4px 4px 0px;
-    padding: 8px 12px;
-    background-color: var(--color-go);
+    padding: 4px 8px;
+    background-color: var(--go-blue);
     transition-duration: 150ms;
     &:hover {
         cursor: pointer;
-        background-color: var(--color-go-dark);
-        border-color: var(--color-go-dark);
+        background-color: var(--go-dark-blue);
+        border-color: var(--go-dark-blue);
     }
 }
 
@@ -99,8 +102,10 @@ th {
 }
 
 a {
-    color: var(--color-go);
+    color: var(--go-blue);
+    text-decoration: none;
     &:hover {
-        color: var(--color-go-dark);
+        color: var(--go-dark-blue);
+        text-decoration: underline;
     }
 }
