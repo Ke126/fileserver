@@ -1,7 +1,7 @@
-package filesystem_test
+package fileserver_test
 
 import (
-	"fileserver/internal/filesystem"
+	"fileserver"
 	"io/fs"
 	"os"
 	"testing"
@@ -11,7 +11,7 @@ import (
 func TestOpen(t *testing.T) {
 	t.Run("test open", func(t *testing.T) {
 		dir := t.TempDir()
-		fsys := filesystem.New(dir)
+		fsys := fileserver.NewFS(dir)
 
 		// TestFS automatically checks . /. ./. /
 		if err := fstest.TestFS(fsys); err != nil {

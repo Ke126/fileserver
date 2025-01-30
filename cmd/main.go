@@ -2,13 +2,12 @@ package main
 
 import (
 	"fileserver"
-	"fileserver/internal/filesystem"
 	"log/slog"
 	"net/http"
 )
 
 func main() {
-	fs := filesystem.New(".")
+	fs := fileserver.NewFS(".")
 	logger := slog.Default()
 	handler := fileserver.FileServer(fs, logger)
 

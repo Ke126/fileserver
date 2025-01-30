@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"fileserver/internal/file"
-	"fileserver/internal/filesystem"
 )
 
 var _ http.Handler = &fileHandler{}
@@ -51,7 +50,7 @@ func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename := filesystem.Clean(r.URL.Path)
+	filename := clean(r.URL.Path)
 
 	f, err := fh.fs.Open(filename)
 	if err != nil {

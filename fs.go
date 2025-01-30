@@ -1,4 +1,4 @@
-package filesystem
+package fileserver
 
 import (
 	"errors"
@@ -9,43 +9,35 @@ import (
 	"path/filepath"
 )
 
-type WriterFS interface {
-	fs.FS
-	Mkdir(name string, perm fs.FileMode) error
-	Remove(name string) error
-	Rename(oldpath string, newpath string) error
-	WriteFile(name string, data []byte, perm fs.FileMode) error
-}
-
-// FSys should comply with the fs.FSys interface (and fstest.TestFS).
+// fsys should comply with the fs.FS interface (and fstest.TestFS).
 // Therefore the Open method should reject any attempts to open
 // files which do not satisfy fs.ValidPath.
 // For consistency reasons, the other methods Mkdir,
 // Remove, Rename, and WriteFile will also enforce this,
 // even though it is not necessary for the os functions.
-type FSys struct {
+type fsys struct {
 	path string
 	root fs.FS
 }
 
-var _ WriterFS = &FSys{}
+var _ WriterFS = &fsys{}
 var errEmptyRoot = errors.New("filesystem: filesystem with empty root")
 
-func New(path string) *FSys {
-	return &FSys{path: path, root: os.DirFS(path)}
+func NewFS(path string) *fsys {
+	return &fsys{path: path, root: os.DirFS(path)}
 }
 
-func New2(path string, root fs.FS) *FSys {
-	return &FSys{path: path, root: root}
+func FromFS(path string, root fs.FS) *fsys {
+	return &fsys{path: path, root: root}
 }
 
-func (fsys *FSys) Open(name string) (fs.File, error) {
+func (fsys *fsys) Open(name string) (fs.File, error) {
 	// the os.DirFS Open function already handles checking
 	// for valid name and valid root name
 	return fsys.root.Open(name)
 }
 
-func (fsys *FSys) Mkdir(name string, perm fs.FileMode) error {
+func (fsys *fsys) Mkdir(name string, perm fs.FileMode) error {
 	if fsys.path == "" {
 		return errEmptyRoot
 	}
@@ -59,7 +51,7 @@ func (fsys *FSys) Mkdir(name string, perm fs.FileMode) error {
 	return os.MkdirAll(fullpath, perm)
 }
 
-func (fsys *FSys) Remove(name string) error {
+func (fsys *fsys) Remove(name string) error {
 	if fsys.path == "" {
 		return errEmptyRoot
 	}
@@ -75,7 +67,7 @@ func (fsys *FSys) Remove(name string) error {
 
 // unlike the os.Rename function, Rename should return an error
 // if the newname already exists
-func (fsys *FSys) Rename(oldname string, newname string) error {
+func (fsys *fsys) Rename(oldname string, newname string) error {
 	if fsys.path == "" {
 		return errEmptyRoot
 	}
@@ -98,7 +90,7 @@ func (fsys *FSys) Rename(oldname string, newname string) error {
 
 // unlike the os.WriteFile function, WriteFile should return an error
 // if the file already exists
-func (fsys *FSys) WriteFile(name string, data []byte, perm fs.FileMode) error {
+func (fsys *fsys) WriteFile(name string, data []byte, perm fs.FileMode) error {
 	if fsys.path == "" {
 		return errEmptyRoot
 	}
@@ -115,10 +107,10 @@ func (fsys *FSys) WriteFile(name string, data []byte, perm fs.FileMode) error {
 	return os.WriteFile(name, data, perm)
 }
 
-// Clean takes a url path, strips leading and trailing "/",
+// clean takes a url path, strips leading and trailing "/",
 // and cleans it to something like "path/to/file" for use in an fs.FS.
 // As a special case, the root path "/" is cleaned to "."
-func Clean(name string) string {
+func clean(name string) string {
 	name = path.Clean(name)
 	if name == "/" {
 		return "."

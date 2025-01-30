@@ -2,7 +2,6 @@ package fileserver_test
 
 import (
 	"fileserver"
-	"fileserver/internal/filesystem"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -106,7 +105,7 @@ func TestRouting(t *testing.T) {
 	}
 
 	dir := makeMockFS()
-	dir2 := filesystem.New2(".", dir)
+	dir2 := fileserver.FromFS(".", dir)
 	customFileServer := fileserver.FileServer(dir2, slog.Default())
 	stdlibFileServer := http.FileServer(http.FS(dir))
 
