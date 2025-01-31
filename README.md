@@ -1,5 +1,7 @@
 # Go Fileserver
 
+[![push-ghcr](https://github.com/ke126/fileserver/actions/workflows/push-ghcr.yaml/badge.svg)](https://github.com/Ke126/fileserver/actions/workflows/push-ghcr.yaml)
+
 ![demo image](./docs/demo.png)
 
 A minimalist fileserver implementation, written in Go with zero external dependencies. Currently supports file viewing, file download, zip download, and recursive search, with many more features planned for the future.
