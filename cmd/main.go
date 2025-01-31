@@ -2,10 +2,11 @@ package main
 
 import (
 	"errors"
-	"fileserver"
 	"log/slog"
 	"net/http"
 	"os"
+
+	"github.com/ke126/fileserver"
 )
 
 func main() {

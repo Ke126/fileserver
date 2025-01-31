@@ -1,11 +1,12 @@
 package fileserver_test
 
 import (
-	"fileserver"
 	"io/fs"
 	"os"
 	"testing"
 	"testing/fstest"
+
+	"github.com/ke126/fileserver"
 )
 
 func TestOpen(t *testing.T) {

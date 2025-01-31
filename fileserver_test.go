@@ -1,13 +1,14 @@
 package fileserver_test
 
 import (
-	"fileserver"
 	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"testing/fstest"
+
+	"github.com/ke126/fileserver"
 )
 
 func TestRouting(t *testing.T) {

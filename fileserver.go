@@ -13,7 +13,7 @@ import (
 	"slices"
 	"strings"
 
-	"fileserver/internal/file"
+	"github.com/ke126/fileserver/internal/file"
 )
 
 var _ http.Handler = &fileHandler{}
