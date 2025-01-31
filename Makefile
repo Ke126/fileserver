@@ -3,3 +3,6 @@ start:
 
 test:
 	go test ./...
+
+lint:
+	go vet ./...
