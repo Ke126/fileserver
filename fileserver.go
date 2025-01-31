@@ -42,13 +42,13 @@ func FileServer(fs WriterFS, logger *slog.Logger) *fileHandler {
 }
 
 func (fh *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fh.logger.Info(r.URL.String())
-
 	// handle requests for styles.css (and other static assets)
 	if strings.HasSuffix(r.URL.Path, "/_static/styles.css") {
 		http.ServeFileFS(w, r, fh.static, "_static/styles.css")
 		return
 	}
+
+	fh.logger.Info(r.URL.String())
 
 	filename := clean(r.URL.Path)
 
